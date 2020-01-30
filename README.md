@@ -1,7 +1,9 @@
-# GATK_GermlineCaller
+# Pindel_GermlineCaller
 
-Call germline variants using GATK4 HaplotypeCaller
+Call germline variants using Pindel
 Can operate on multiple regions with a passed CHRLIST file
+
+**TODO** update documentation to reflect Pindel update
 
 For single region, calls look like,:
   gatk HaplotypeCaller -R REF -I BAM 

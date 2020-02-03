@@ -49,6 +49,8 @@ RUN cd /usr/local/ \
 RUN cd /usr/local/ \
     && git clone --recursive https://github.com/ding-lab/TinDaisy-Core.git
 
+RUN printf 'will cite\n' | parallel --citation
+
 WORKDIR /opt
 
 

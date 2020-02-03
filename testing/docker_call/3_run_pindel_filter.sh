@@ -3,10 +3,11 @@ source ../../docker/docker_image.sh
 DATD="../demo_data"
 OUTD="./output"
 
-BAM="/data/HCC1954.NORMAL.30x.compare.COST16011_region.bam"
-REF="/data/Homo_sapiens_assembly19.COST16011_region.fa"
 
-PROCESS="/opt/Pindel_GermlineCaller/src/pindel_caller.process_sample_parallel.sh"
+DAT="/output/pindel-sifted.out"
+REF="/data/Homo_sapiens_assembly19.COST16011_region.fa"
+CONFIG="/data/pindel_germline_filter_config.ini"
+PROCESS="/opt/Pindel_GermlineCaller/src/pindel_filter.process_sample.sh"
 
 # Using python to get absolute path of DATD.  On Linux `readlink -f` works, but on Mac this is not always available
 # see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
@@ -15,7 +16,7 @@ AOUTD=$(python -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' $OUTD)
 
 # /output in container maps to $OUTD on host
 ARG="-o /output"
-CMD="bash $PROCESS $@ $ARG $REF $BAM"
+CMD=" bash $PROCESS "$@" $DAT $REF $CONFIG"
 DCMD="docker run -v $ADATD:/data -v $AOUTD:/output -it $IMAGE $CMD"
 >&2 echo Running: $DCMD
 eval $DCMD

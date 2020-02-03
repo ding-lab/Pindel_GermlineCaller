@@ -1,7 +1,15 @@
 # Pindel_GermlineCaller
 
-Call germline variants using Pindel
-Can operate on multiple regions with a passed CHRLIST file
+Pindel germline calling proceeds in several steps:
+
+1. pindel run generates raw files (`pindel_*D`, etc)
+    * these may be run per chromosome by passing CHRLIST file
+    * performed by `pindel_caller.process_sample.sh`
+2. Running `grep ChrID` on raw data generates one "sifted" file, `pindel_sifted.out`
+    * performed by `pindel_caller.process_sample_parallel.sh`
+3. `GenomeVIP/pindel_filter.pl` then filters the sifted file to generate a VCF file
+    * performed by `pindel_filter.process_sample.sh`
+
 
 **TODO** update documentation to reflect Pindel update
 

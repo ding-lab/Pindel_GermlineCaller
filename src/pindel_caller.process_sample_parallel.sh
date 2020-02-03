@@ -5,13 +5,13 @@
 
 read -r -d '' USAGE <<'EOF'
 Run pindel germline caller, possibly for multiple intervals in parallel,
-and generate one pindel output file
+and perform `grep ChrID` on output to generate one sifted output file
 
 Usage: 
   process_sample_parallel.sh [options] REF BAM
 
 Output: 
-    OUTD/pindel.Final.out ???
+    OUTD/pindel_sifted.out
 
 Options:
 -h : print usage information
@@ -24,26 +24,18 @@ Options:
 -s SAMPLE_NAME : Sample name as used in pindel configuration file [ "SAMPLE" ]
 -J CENTROMERE: optional bed file passed to pindel to exclude regions
 -C CONFIG_FN: Config file to use instead of creating one here
--D: Do not delete pindel temp files
 
 The following arguments are passed to process_sample.sh directly:
 -A PINDEL_ARGS: Arguments passed to Pindel.  Default: "-x 4 -I -B 0 -M 3"
 
-For single region, calls look like,:
-  pindel ...
-  gatk SelectVariants -O Pindel.snp.Final.vcf -select-type SNP -select-type MNP 
-  gatk SelectVariants -O Pindel.indel.Final.vcf -select-type INDEL
-
-For multiple regions (specified by -c CHRLIST), calls are like,
-  for CHR in CHRLIST
-    gatk HaplotypeCaller -R REF -I BAM -L CHR
-    gatk SelectVariants -O CHR_SNP -select-type SNP -select-type MNP 
-    gatk SelectVariants -O CHR_INDEL -select-type INDEL
-  bcftools concat -o Pindel.snp.Final.vcf
-  bcftools concat -o Pindel.indel.Final.vcf
+The general procedure generally looks like,
+  make_config > OUTD/pindel_config.dat
+  pindel > OUTD/raw
+  grep ChrID OUTD/raw > OUTD/pindel_sifted.out
 
 CHRLIST is a file listing genomic intervals over which to operate, with each
-line passed to `pindel -c`. 
+line passed to `pindel -c`.  Raw output from multiple chromsomes is merged in
+the `grep` step
 
 In general, if CHRLIST is defined, jobs will be submitted in parallel mode: use
 GNU parallel to loop across all entries in CHRLIST, running -j JOBS at a time,
@@ -67,7 +59,7 @@ OUTD="./output"
 PROCESS="/opt/Pindel_GermlineCaller/src/pindel_caller.process_sample.sh"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":hd1c:j:o:Fs:J:C:A:D:" opt; do
+while getopts ":hd1c:j:o:Fs:J:C:A:" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -104,9 +96,6 @@ while getopts ":hd1c:j:o:Fs:J:C:A:D:" opt; do
       ;;
     A) 
       PS_ARGS="$PS_ARGS -A \"$OPTARG\""
-      ;;
-    D) 
-      NO_DELETE_TEMP=1
       ;;
     \?)
       >&2 echo "$SCRIPT: ERROR: Invalid option: -$OPTARG"
@@ -147,11 +136,9 @@ fi
 # Output, tmp, and log files go here
 mkdir -p $OUTD
 
-# Per-region output goes here
-if [ ! "$NO_CHRLIST" ]; then
-    OUTDR="$OUTD/regions"
-    mkdir -p $OUTDR
-fi
+# raw output goes here
+OUTDR="$OUTD/raw"
+mkdir -p $OUTDR
 
 LOGD="$OUTD/logs"
 mkdir -p $LOGD
@@ -184,10 +171,12 @@ for CHR in $CHRLIST; do
 
     # core call to process_sample.sh
     if [ "$NO_CHRLIST" ]; then
-        CMD="$PROCESS $PS_ARGS -o $OUTD -l Final $REF $BAM | gzip > $STDOUT_FN 2> $STDERR_FN"
+        LARG="-l Final"
     else
-        CMD="$PROCESS $PS_ARGS -o $OUTDR -L $CHR $REF $BAM | gzip > $STDOUT_FN 2> $STDERR_FN"
+        LARG="-L $CHR"
     fi
+
+    CMD="$PROCESS $PS_ARGS -o $OUTDR $LARG $REF $BAM | gzip > $STDOUT_FN 2> $STDERR_FN"
 
     if [ $DO_PARALLEL == 1 ]; then
         JOBLOG="$LOGD/Pindel_GermlineCaller.$CHR.log"
@@ -209,17 +198,16 @@ if [ $DO_PARALLEL == 1 ]; then
     run_cmd "$CMD" $DRYRUN
 fi
 
-# Now parse pindel output to get pindel-raw.out file
+# Now parse pindel output to get pindel-sifted.out file
 # testing for globs from https://stackoverflow.com/questions/2937407/test-whether-a-glob-has-any-matches-in-bash
 
-PINDEL_OUT="$OUTD/pindel-raw.out"
+PINDEL_OUT="$OUTD/pindel-sifted.out"
 
 PATTERN="$OUTDR/pindel_*D $OUTDR/pindel_*SI $OUTDR/pindel_*INV $OUTDR/pindel_*TD"
 if stat -t $PATTERN >/dev/null 2>&1; then
-    OUT="$OUTD/pindel-raw.out"
-    CMD="grep -h $PATTERN > $OUT"
+    CMD="grep -h ChrID $PATTERN > $PINDEL_OUT"
     run_cmd "$CMD" $DRYRUN
-    >&2 echo Raw pindel output : $OUT
+    >&2 echo Sifted pindel output : $PINDEL_OUT
 else
     >&2 echo $SCRIPT : pindel : no output found matching $PATTERN
 fi
@@ -227,38 +215,15 @@ fi
 
 if [[ "$FINALIZE" ]] ; then
 
-    LOGD="$OUTD/logs"
-    TAR="$OUTD/logs.tar.gz"
+    TAR="$OUTD/raw.tar.gz"
     if [ -e $TAR ]; then
         >&2 echo WARNING: $TAR exists
-        >&2 echo Skipping log finalize
+        >&2 echo Skipping raw finalize
     else
-        CMD="tar -zcf $TAR $LOGD && rm -rf $LOGD"
+        CMD="tar -zcf $TAR -C $OUTD raw && rm -rf $OUTDR"
         run_cmd "$CMD" $DRYRUN
-        >&2 echo Logs in $LOGD is compressed as $TAR and deleted
+        >&2 echo Intermediate output in $OUTDR is compressed as $TAR and deleted
     fi
-
-    if [[ ! "$NO_CHRLIST" ]]; then
-        TAR="$OUTD/regions.tar.gz"
-        if [ -e $TAR ]; then
-            >&2 echo WARNING: $TAR exists
-            >&2 echo Skipping regions finalize
-        else
-            CMD="tar -zcf $TAR $OUTDR && rm -rf $OUTDR"
-            run_cmd "$CMD" $DRYRUN
-            >&2 echo Intermediate output in $OUTDR is compressed as $TAR and deleted
-        fi
-    fi
-fi
-
-if [[ $NO_DELETE_TEMP == 1 ]]; then
-    >&2 echo Not deleting intermediate pindel files
-else
-    >&2 echo Deleting intermediate pindel files
-    CMD="rm -f pindel_* pindel*out.gz"
-    run_cmd "$CMD" $DRYRUN
-    CMD="rm -rf tmp"
-    run_cmd "$CMD" $DRYRUN
 fi
 
 echo Final result written to $PINDEL_OUT

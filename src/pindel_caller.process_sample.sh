@@ -1,7 +1,7 @@
 #/bin/bash
 
 read -r -d '' USAGE <<'EOF'
-Run pindel germline variant caller 
+Run pindel germline variant caller to generate raw pindel output
 
 Usage: process_sample.sh [options] reference.fa input.bam 
  
@@ -23,7 +23,7 @@ Output filenames:
 where XXX is given by INTERVAL_LABEL
 EOF
 
-source /opt/GATK_GermlineCaller/src/utils.sh
+source /opt/Pindel_GermlineCaller/src/utils.sh
 SCRIPT=$(basename $0)
 
 PINDEL_BIN="/usr/local/pindel/pindel"

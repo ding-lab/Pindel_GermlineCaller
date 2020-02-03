@@ -4,15 +4,14 @@
 # https://dinglab.wustl.edu/
 
 read -r -d '' USAGE <<'EOF'
-Run GATK germline caller, possibly for multiple intervals in parallel,
-and generate one VCF file for SNVs and one for INDELs
+Run pindel germline caller, possibly for multiple intervals in parallel,
+and generate one pindel output file
 
 Usage: 
   process_sample_parallel.sh [options] REF BAM
 
 Output: 
-    OUTD/GATK.snp.Final.vcf
-    OUTD/GATK.indel.Final.vcf
+    OUTD/pindel.Final.out ???
 
 Options:
 -h : print usage information
@@ -22,36 +21,38 @@ Options:
 -j JOBS: if parallel run, number of jobs to run at any one time.  If 0, run sequentially.  Default: 4
 -o OUTD: set output root directory.  Default ./output
 -F : finalize run by compressing per-region output and logs
+-s SAMPLE_NAME : Sample name as used in pindel configuration file [ "SAMPLE" ]
+-J CENTROMERE: optional bed file passed to pindel to exclude regions
+-C CONFIG_FN: Config file to use instead of creating one here
+-D: Do not delete pindel temp files
 
 The following arguments are passed to process_sample.sh directly:
--C HC_ARGS : pass args to `gatk HaplotypeCaller`
--R SV_SNP_ARGS : pass SV_SNP_ARGS to `gatk SelectVariants -select-type SNP -select-type MNP`
--S SV_INDEL_ARGS : pass SV_INDEL_ARGS to `gatk SelectVariants -select-type INDEL`
+-A PINDEL_ARGS: Arguments passed to Pindel.  Default: "-x 4 -I -B 0 -M 3"
 
 For single region, calls look like,:
-  gatk HaplotypeCaller -R REF -I BAM 
-  gatk SelectVariants -O GATK.snp.Final.vcf -select-type SNP -select-type MNP 
-  gatk SelectVariants -O GATK.indel.Final.vcf -select-type INDEL
+  pindel ...
+  gatk SelectVariants -O Pindel.snp.Final.vcf -select-type SNP -select-type MNP 
+  gatk SelectVariants -O Pindel.indel.Final.vcf -select-type INDEL
 
 For multiple regions (specified by -c CHRLIST), calls are like,
   for CHR in CHRLIST
     gatk HaplotypeCaller -R REF -I BAM -L CHR
     gatk SelectVariants -O CHR_SNP -select-type SNP -select-type MNP 
     gatk SelectVariants -O CHR_INDEL -select-type INDEL
-  bcftools concat -o GATK.snp.Final.vcf
-  bcftools concat -o GATK.indel.Final.vcf
+  bcftools concat -o Pindel.snp.Final.vcf
+  bcftools concat -o Pindel.indel.Final.vcf
 
 CHRLIST is a file listing genomic intervals over which to operate, with each
-line passed to `gatk HaplotypeCaller -L`. 
+line passed to `pindel -c`. 
 
 In general, if CHRLIST is defined, jobs will be submitted in parallel mode: use
 GNU parallel to loop across all entries in CHRLIST, running -j JOBS at a time,
-and wait until all jobs completed.  Output logs written to OUTD/logs/GATK.$CHR.log
+and wait until all jobs completed.  Output logs written to OUTD/logs/Pindel.$CHR.log
 Parallel mode can be disabled with -j 0.
 
 EOF
 
-source /opt/GATK_GermlineCaller/src/utils.sh
+source /opt/Pindel_GermlineCaller/src/utils.sh
 SCRIPT=$(basename $0)
 
 # Background on `parallel` and details about blocking / semaphores here:
@@ -63,11 +64,10 @@ SCRIPT=$(basename $0)
 NJOBS=4
 DO_PARALLEL=0
 OUTD="./output"
-PROCESS="/opt/GATK_GermlineCaller/src/process_sample.sh"
-BCFTOOLS="/opt/miniconda/bin/bcftools"
+PROCESS="/opt/Pindel_GermlineCaller/src/pindel_caller.process_sample.sh"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":hd1c:j:o:C:R:S:F" opt; do
+while getopts ":hd1c:j:o:Fs:J:C:A:D:" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -90,17 +90,23 @@ while getopts ":hd1c:j:o:C:R:S:F" opt; do
     o) 
       OUTD=$OPTARG
       ;;
+    F) 
+      FINALIZE=1
+      ;;
+    s) 
+      PS_ARGS="$PS_ARGS -s \"$OPTARG\""
+      ;;
+    J) 
+      PS_ARGS="$PS_ARGS -J \"$OPTARG\""
+      ;;
     C) 
       PS_ARGS="$PS_ARGS -C \"$OPTARG\""
       ;;
-    R) 
-      PS_ARGS="$PS_ARGS -R \"$OPTARG\""
+    A) 
+      PS_ARGS="$PS_ARGS -A \"$OPTARG\""
       ;;
-    S) 
-      PS_ARGS="$PS_ARGS -S \"$OPTARG\""
-      ;;
-    F) 
-      FINALIZE=1
+    D) 
+      NO_DELETE_TEMP=1
       ;;
     \?)
       >&2 echo "$SCRIPT: ERROR: Invalid option: -$OPTARG"
@@ -147,7 +153,6 @@ if [ ! "$NO_CHRLIST" ]; then
     mkdir -p $OUTDR
 fi
 
-# CHRLIST newline-separated list of regions passed to GATK HaplotypeCaller -L 
 LOGD="$OUTD/logs"
 mkdir -p $LOGD
 
@@ -169,22 +174,23 @@ else
     >&2 echo . 	  Log files: $LOGD
 fi
 
+# CHRLIST newline-separated list of regions passed to Pindel -c 
 for CHR in $CHRLIST; do
     NOW=$(date)
     >&2 echo \[ $NOW \] : Processing $CHR
 
-    STDOUT_FN="$LOGD/GATK_GermlineCaller.$CHR.out"
-    STDERR_FN="$LOGD/GATK_GermlineCaller.$CHR.err"
+    STDOUT_FN="$LOGD/Pindel_GermlineCaller.$CHR.out.gz"
+    STDERR_FN="$LOGD/Pindel_GermlineCaller.$CHR.err"
 
     # core call to process_sample.sh
     if [ "$NO_CHRLIST" ]; then
-        CMD="$PROCESS $PS_ARGS -o $OUTD -l Final $REF $BAM > $STDOUT_FN 2> $STDERR_FN"
+        CMD="$PROCESS $PS_ARGS -o $OUTD -l Final $REF $BAM | gzip > $STDOUT_FN 2> $STDERR_FN"
     else
-        CMD="$PROCESS $PS_ARGS -o $OUTDR -L $CHR $REF $BAM > $STDOUT_FN 2> $STDERR_FN"
+        CMD="$PROCESS $PS_ARGS -o $OUTDR -L $CHR $REF $BAM | gzip > $STDOUT_FN 2> $STDERR_FN"
     fi
 
     if [ $DO_PARALLEL == 1 ]; then
-        JOBLOG="$LOGD/GATK_GermlineCaller.$CHR.log"
+        JOBLOG="$LOGD/Pindel_GermlineCaller.$CHR.log"
         CMD=$(echo "$CMD" | sed 's/"/\\"/g' )   # This will escape the quotes in $CMD
         CMD="parallel --semaphore -j$NJOBS --id $MYID --joblog $JOBLOG --tmpdir $LOGD \"$CMD\" "
     fi
@@ -203,35 +209,21 @@ if [ $DO_PARALLEL == 1 ]; then
     run_cmd "$CMD" $DRYRUN
 fi
 
-# Now merge if we are looping over regions in CHRLIST
-# Merged output will have same filename as if CHR were "Final"
+# Now parse pindel output to get pindel-raw.out file
 # testing for globs from https://stackoverflow.com/questions/2937407/test-whether-a-glob-has-any-matches-in-bash
-if [ ! "$NO_CHRLIST" ]; then
 
-    # First merge the snp
-    PATTERN="$OUTDR/GATK.snp.*.vcf"
-    if stat -t $PATTERN >/dev/null 2>&1; then
-        IN=`ls $PATTERN`
-        OUT="$OUTD/GATK.snp.Final.vcf"
-        CMD="$BCFTOOLS concat -o $OUT $IN"
-        run_cmd "$CMD" $DRYRUN
-        >&2 echo Final SNP output : $OUT
-    else
-        >&2 echo $SCRIPT : snp merge: no output found matching $PATTERN
-    fi
+PINDEL_OUT="$OUTD/pindel-raw.out"
 
-    # then merge the indel
-    PATTERN="$OUTDR/GATK.indel.*.vcf"
-    if stat -t $PATTERN >/dev/null 2>&1; then
-        IN=`ls $PATTERN`
-        OUT="$OUTD/GATK.indel.Final.vcf"
-        CMD="$BCFTOOLS concat -o $OUT $IN"
-        run_cmd "$CMD" $DRYRUN
-        >&2 echo Final INDEL output : $OUT
-    else
-        >&2 echo $SCRIPT : indel merge: no output found matching $PATTERN
-    fi
+PATTERN="$OUTDR/pindel_*D $OUTDR/pindel_*SI $OUTDR/pindel_*INV $OUTDR/pindel_*TD"
+if stat -t $PATTERN >/dev/null 2>&1; then
+    OUT="$OUTD/pindel-raw.out"
+    CMD="grep -h $PATTERN > $OUT"
+    run_cmd "$CMD" $DRYRUN
+    >&2 echo Raw pindel output : $OUT
+else
+    >&2 echo $SCRIPT : pindel : no output found matching $PATTERN
 fi
+
 
 if [[ "$FINALIZE" ]] ; then
 
@@ -259,6 +251,17 @@ if [[ "$FINALIZE" ]] ; then
     fi
 fi
 
+if [[ $NO_DELETE_TEMP == 1 ]]; then
+    >&2 echo Not deleting intermediate pindel files
+else
+    >&2 echo Deleting intermediate pindel files
+    CMD="rm -f pindel_* pindel*out.gz"
+    run_cmd "$CMD" $DRYRUN
+    CMD="rm -rf tmp"
+    run_cmd "$CMD" $DRYRUN
+fi
+
+echo Final result written to $PINDEL_OUT
 
 NOW=$(date)
 >&2 echo [ $NOW ] $SCRIPT : SUCCESS

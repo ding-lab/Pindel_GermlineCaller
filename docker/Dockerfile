@@ -19,10 +19,16 @@ MAINTAINER Matthew Wyczalkowski <m.wyczalkowski@wustl.edu>
 
 RUN apt-get update && apt-get install -y \
     build-essential \
+    curl \
     git \
+    libbz2-dev \
+    libcurl4-openssl-dev \
+    liblzma-dev \
+    libz-dev \
     parallel \
     vim-tiny \
     zlib1g-dev 
+
 
 # this is from /Users/mwyczalk/Projects/TinDaisy/TinDaisy-Core/docker/Dockerfile
 # Install Pindel and HTSLIB.  Using ding-lab branch

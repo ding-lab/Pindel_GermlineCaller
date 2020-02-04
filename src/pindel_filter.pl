@@ -28,6 +28,7 @@ use Getopt::Long;
 use POSIX qw( WIFEXITED );
 use File::Temp qw/ tempfile /;
 use File::Basename;
+use File::Spec;
 
 # List of parameters 
 # * variants_file                       : Required
@@ -349,8 +350,9 @@ if ($paras{'apply_filter'} eq "true") {
 
 # Output path: if output_dir is defined, make a link to input data in that directory, which will cause all subsequent input to be written there
 if (exists ($paras{'output_dir'})) {
-    my $outd = $paras{'output_dir'}
-    my $cmd = "mkdir -p $outd && ln -s $var_file $outd";
+    my $outd = $paras{'output_dir'};
+    my $var_file_abs = File::Spec->rel2abs( $var_file ) ;
+    my $cmd = "mkdir -p $outd && ln -s $var_file_abs $outd";
     print STDERR "Staging to output dir with: $cmd\n";
     my $return_code = system ( $cmd );
     die("Exiting ($return_code).\n") if $return_code != 0;
@@ -370,8 +372,8 @@ if ($paras{'apply_filter'} eq "true"  &&  $paras{'mode'} ne "pooled") {
             $paras{'parents_max_num_supporting_reads'}, $zero);
     } else {
         my $infn_base = basename($var_file);
-        print STDERR "Skipping filter 1 (CvgVafStrand).  Creating $passfn as link to $out_base\n";
-        my $return_code = system ( "ln -fs $out_base $passfn" );
+        print STDERR "Skipping filter 1 (CvgVafStrand).  Creating $passfn as link to $infn_base\n";
+        my $return_code = system ( "ln -fs $infn_base $passfn" );
         die("Exiting ($return_code).\n") if $return_code != 0;
     }
 }

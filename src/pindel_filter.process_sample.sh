@@ -10,6 +10,7 @@ Options:
 -d : Dry run - output commands but do not execute them
 -V: Bypass filtering for CvgVafStrand 
 -H: Bypass filtering for Homopolymer 
+-o: output directory.  By default, same directory as the input data
 
 pindel_config is GenomeVIP config file for pindel_filter
 
@@ -21,8 +22,6 @@ Creates configuration file and calls GenomeVIP/pindel_filter.pl, which performs 
 Output filenames:
     OUTD/pindel_germline_filter_config.dat
     OUTD/pindel_sifted.out.CvgVafStrand_pass.Homopolymer_pass.vcf
-
-Note that OUTD is the same directory as the input data
 
 GenomeVIP pindel_filter configuration file consists of two parts:
   * template lines obtained from pindel_config_template
@@ -47,10 +46,10 @@ SCRIPT=$(basename $0)
 
 PERL="/usr/bin/perl"
 PINDELD="/usr/local/pindel"
-GVIP_FILTER="/usr/local/TinDaisy-Core/src/GenomeVIP/pindel_filter.pl"
+GVIP_FILTER="/opt/Pindel_GermlineCaller/src/pindel_filter.pl"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":hdVH" opt; do
+while getopts ":hdVHo:" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -64,6 +63,10 @@ while getopts ":hdVH" opt; do
       ;;
     H)  # binary argument
       BYPASS_HOMOPOLYMER=1
+      ;;
+    o)  
+      OUTD="$OPTARG"
+      SET_OUTD=1
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG"
@@ -94,6 +97,11 @@ function make_config_genomevip {
     if [ $BYPASS_HOMOPOLYMER ]; then
         BYPASS_HOMOPOLYMER_STR="pindel.filter.skip_filter2 = true"
     fi
+    if [ $SET_OUTD ]; then
+	mkdir -p $OUTD
+	test_exit_status
+        OUTD_STR="pindel.filter.output_dir = $OUTD"
+    fi
 
     cp $CONFIG_TEMPLATE $CONFIG ; test_exit_status
     cat << EOF >> $CONFIG
@@ -103,6 +111,7 @@ pindel.filter.REF = $REF
 pindel.filter.date = 000000
 $BYPASS_CVS_STR
 $BYPASS_HOMOPOLYMER_STR
+$OUTD_STR
 EOF
 }
 
@@ -116,7 +125,9 @@ INFN=$1 ; confirm $INFN
 REF=$2 ; confirm $REF
 CONFIG_TEMPLATE=$3 ; confirm $PINDEL_CONFIG
 
-OUTD=$(dirname $INFN)
+if [ -z $OUTD]; then
+    OUTD=$(dirname $INFN)
+fi
 # Filter script imposes this
 FNOUT=$(basename $INFN)
 

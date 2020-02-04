@@ -35,14 +35,14 @@ inputs:
       position: 0
       prefix: '-V'
     label: bypass_cvs
-    doc: 'Bypass filtering for CvgVafStrand"
+    doc: 'Bypass filtering for CvgVafStrand'
   - id: bypass_homopolymer
     type: boolean?
     inputBinding:
       position: 0
       prefix: '-H'
     label: bypass_homopolymer
-    doc: 'Bypass filtering for Homopolymer"
+    doc: 'Bypass filtering for Homopolymer'
 outputs:
   - id: indel_vcf
     type: File

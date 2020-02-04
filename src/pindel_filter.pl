@@ -9,6 +9,7 @@
 # @author Beifang Niu
 # @author R. Jay Mashl <rmashl@genome.wustl.edu>
 # 
+# @version 0.7 (maw): Allow output directory to be explicitly set
 # @version 0.6 (maw): modularize to allow for improved debugging
 # @version 0.5 (rjm): improve documentation
 # @version 0.4 (rjm): (optional) user-specified log file for appending; mode not required to be specified when not performing filtering
@@ -47,6 +48,7 @@ use File::Basename;
 # * skip_filter1:      skip CvgVafStrandFilter
 # * skip_pindel2vcf:   do not run pindel2vcf
 # * skip_filter2:      skip Homopolymer filter 
+# * output_dir:        All output written to this directory
 
 # Confirm that all required configuration parameters are defined.  Exit with an error if they are not
 sub test_config_parameters {
@@ -345,21 +347,31 @@ if ($paras{'apply_filter'} eq "true") {
     $filter2_prefix{'fail'} = "Homopolymer_fail";
 }
 
+# Output path: if output_dir is defined, make a link to input data in that directory, which will cause all subsequent input to be written there
+if (exists ($paras{'output_dir'})) {
+    my $outd = $paras{'output_dir'}
+    my $cmd = "mkdir -p $outd && ln -s $var_file $outd";
+    print STDERR "Staging to output dir with: $cmd\n";
+    my $return_code = system ( $cmd );
+    die("Exiting ($return_code).\n") if $return_code != 0;
+    my $out_base = basename($var_file);
+    $var_file="$outd/$out_base";
+}
+
 # run CvgVafStrandFilter
 if ($paras{'apply_filter'} eq "true"  &&  $paras{'mode'} ne "pooled") {
-    my $infn = "$var_file";
     my $passfn = "$var_file.$filter1_prefix{'pass'}";
     my $failfn = "$var_file.$filter1_prefix{'fail'}";
     if ( (not exists ($paras{'skip_filter1'})) or ($paras{'skip_filter1'} !~ /true/)) {
-        print STDERR "Running filter 1 (CvgVafStrand).  Input: $infn  Pass Output: $passfn\n";
-        CvgVafStrandFilter($infn, $passfn, $failfn, $paras{'mode'}, $paras{'min_coverages'}, 
+        print STDERR "Running filter 1 (CvgVafStrand).  Input: $var_file  Pass Output: $passfn\n";
+        CvgVafStrandFilter($var_file, $passfn, $failfn, $paras{'mode'}, $paras{'min_coverages'}, 
             $paras{'min_var_allele_freq'}, ($paras{'require_balanced_reads'} =~ /true/), 
             ($paras{'remove_complex_indels'} =~ /true/), $paras{'child_var_allele_freq'}, 
             $paras{'parents_max_num_supporting_reads'}, $zero);
     } else {
-        my $infn_base = basename($infn);
-        print STDERR "Skipping filter 1 (CvgVafStrand).  Creating $passfn as link to $infn_base\n";
-        my $return_code = system ( "ln -fs $infn_base $passfn" );
+        my $infn_base = basename($var_file);
+        print STDERR "Skipping filter 1 (CvgVafStrand).  Creating $passfn as link to $out_base\n";
+        my $return_code = system ( "ln -fs $out_base $passfn" );
         die("Exiting ($return_code).\n") if $return_code != 0;
     }
 }

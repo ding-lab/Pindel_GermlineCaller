@@ -44,11 +44,16 @@ inputs:
     label: bypass_homopolymer
     doc: 'Bypass filtering for Homopolymer'
 outputs:
+# output name is based on assumption that default filenames used
   - id: indel_vcf
     type: File
     outputBinding:
-      glob: output/pindel_sifted.out.CvgVafStrand_pass.Homopolymer_pass.vcf
+      glob: filtered/pindel_sifted.out.CvgVafStrand_pass.Homopolymer_pass.vcf
 label: pindel_filter.Pindel_GermlineCaller
+arguments:
+  - position: 0
+    prefix: '-o'
+    valueFrom: filtered
 requirements:
   - class: ResourceRequirement
     ramMin: 8000

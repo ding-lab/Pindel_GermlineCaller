@@ -45,10 +45,6 @@ RUN cd /usr/local/ \
     && cd /usr/local/pindel/ \
     && ./INSTALL /usr/local/htslib
 
-# Only using GenomeVIP pindel_filter.sh from here
-RUN cd /usr/local/ \
-    && git clone --recursive https://github.com/ding-lab/TinDaisy-Core.git
-
 RUN printf 'will cite\n' | parallel --citation
 
 WORKDIR /opt

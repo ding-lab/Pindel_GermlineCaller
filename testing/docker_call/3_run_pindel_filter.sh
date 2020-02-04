@@ -1,7 +1,8 @@
 source ../../docker/docker_image.sh
 
 DATD="../demo_data"
-OUTD="./output"
+IND="./output"
+OUTD="./filtered"
 
 
 DAT="/output/pindel_sifted.out"
@@ -13,11 +14,13 @@ PROCESS="/opt/Pindel_GermlineCaller/src/pindel_filter.process_sample.sh"
 # see https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
 ADATD=$(python -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' $DATD)
 AOUTD=$(python -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' $OUTD)
+AIND=$(python -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' $IND)
 
 # /output in container maps to $OUTD on host
-ARG="-o /output"
-CMD=" bash $PROCESS "$@" $DAT $REF $CONFIG"
-DCMD="docker run -v $ADATD:/data -v $AOUTD:/output -it $IMAGE $CMD"
+# -V -H bypasses filtering to retain our one variant
+ARG="-o /filtered -V -H"
+CMD=" bash $PROCESS "$@" $ARG $DAT $REF $CONFIG"
+DCMD="docker run -v $ADATD:/data -v $AOUTD:/filtered -v $AIND:/output -it $IMAGE $CMD"
 >&2 echo Running: $DCMD
 eval $DCMD
 

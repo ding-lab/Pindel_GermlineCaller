@@ -1,6 +1,6 @@
 pindel_sifted:
   class: File
-  path: output/pindel_sifted.out
+  path: /home/mwyczalk_test/Projects/GermlineCaller/Pindel_GermlineCaller/results/pindel_caller.Pindel_GermlineCaller-2020-02-04-123310.814/root/output/pindel_sifted.out
 reference:
   class: File
   path: ../demo_data/Homo_sapiens_assembly19.COST16011_region.fa
@@ -8,3 +8,5 @@ pindel_config_template:
   class: File
   path: ../../params/pindel_germline_filter_config.ini
 dryrun: false
+bypass_cvs: false
+bypass_homopolymer: false

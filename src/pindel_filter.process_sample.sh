@@ -3,7 +3,7 @@
 read -r -d '' USAGE <<'EOF'
 Process pindel run output and generate VCF.
 
-Usage: pindel_filter.process_sample.sh [options] pindel_sifted.dat reference pindel_config_template
+Usage: pindel_filter.process_sample.sh [options] pindel_sifted.out reference pindel_config_template
  
 Options:
 -h: Print this help message

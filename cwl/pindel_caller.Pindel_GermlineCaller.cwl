@@ -1,9 +1,9 @@
 class: CommandLineTool
 cwlVersion: v1.0
-id: somatic_sv_workflow
+id: pindel_caller.Pindel_GermlineCaller
 baseCommand:
   - /bin/bash
-  - /opt/GATK_GermlineCaller/src/process_sample_parallel.sh
+  - /opt/Pindel_GermlineCaller/src/pindel_caller.process_sample_parallel.sh
 inputs:
   - id: reference
     type: File
@@ -46,37 +46,39 @@ inputs:
       prefix: '-F'
     label: finalize
     doc: 'Compress intermediate data and logs'
-  - id: HC_ARGS
+  - id: pindel_args
     type: string?
+    inputBinding:
+      position: 0
+      prefix: '-A'
+    label: 'Arguments passed to Pindel.  Default: "-x 4 -I -B 0 -M 3"'
+  - id: sample_name
+    type: string?
+    inputBinding:
+      position: 0
+      prefix: '-s'
+    label: 'Sample name as used in pindel configuration file.  Default: SAMPLE'
+  - id: centromere
+    type: File?
+    inputBinding:
+      position: 0
+      prefix: '-J'
+    label: optional bed file passed to pindel to exclude regions
+  - id: config_fn
+    type: File?
     inputBinding:
       position: 0
       prefix: '-C'
-    label: GATK HaplotypeCaller arguments
-  - id: SV_SNP_ARGS
-    type: string?
-    inputBinding:
-      position: 0
-      prefix: '-R'
-    label: SelectVariants SNP arguments
-  - id: SV_INDEL_ARGS
-    type: string?
-    inputBinding:
-      position: 0
-      prefix: '-S'
-    label: SelectVariants INDEL arguments
+    label: Pindel config file to use instead of creating one
 outputs:
-  - id: snp_vcf
-    type: File?
+  - id: pindel_sifted
+    type: File
     outputBinding:
-      glob: output/GATK.snp.Final.vcf
-  - id: indel_vcf
-    type: File?
-    outputBinding:
-      glob: output/GATK.indel.Final.vcf
-label: GATK_GermlineCaller
+      glob: output/pindel_sifted.out
+label: pindel_caller.Pindel_GermlineCaller
 requirements:
   - class: ResourceRequirement
     ramMin: 8000
   - class: DockerRequirement
-    dockerPull: mwyczalkowski/gatk_germlinecaller
+    dockerPull: mwyczalkowski/pindel_germlinecaller
   - class: InlineJavascriptRequirement

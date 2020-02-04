@@ -1,0 +1,10 @@
+pindel_sifted:
+  class: File
+  path: output/pindel_sifted.out
+reference:
+  class: File
+  path: ../demo_data/Homo_sapiens_assembly19.COST16011_region.fa
+pindel_config_template:
+  class: File
+  path: ../../params/pindel_germline_filter_config.ini
+dryrun: false

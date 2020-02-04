@@ -16,7 +16,7 @@ Output:
 Options:
 -h : print usage information
 -d : dry-run. Print commands but do not execute them
--1 : stop after iteration over CHRLIST
+-1 : stop after one iteration over CHRLIST
 -c CHRLIST: File listing genomic intervals over which to operate
 -j JOBS: if parallel run, number of jobs to run at any one time.  If 0, run sequentially.  Default: 4
 -o OUTD: set output root directory.  Default ./output
@@ -198,10 +198,10 @@ if [ $DO_PARALLEL == 1 ]; then
     run_cmd "$CMD" $DRYRUN
 fi
 
-# Now parse pindel output to get pindel-sifted.out file
+# Now parse pindel output to get pindel_sifted.out file
 # testing for globs from https://stackoverflow.com/questions/2937407/test-whether-a-glob-has-any-matches-in-bash
 
-PINDEL_OUT="$OUTD/pindel-sifted.out"
+PINDEL_OUT="$OUTD/pindel_sifted.out"
 
 PATTERN="$OUTDR/pindel_*D $OUTDR/pindel_*SI $OUTDR/pindel_*INV $OUTDR/pindel_*TD"
 if stat -t $PATTERN >/dev/null 2>&1; then

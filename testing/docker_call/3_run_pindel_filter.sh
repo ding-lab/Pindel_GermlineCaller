@@ -4,7 +4,7 @@ DATD="../demo_data"
 OUTD="./output"
 
 
-DAT="/output/pindel-sifted.out"
+DAT="/output/pindel_sifted.out"
 REF="/data/Homo_sapiens_assembly19.COST16011_region.fa"
 CONFIG="/data/pindel_germline_filter_config.ini"
 PROCESS="/opt/Pindel_GermlineCaller/src/pindel_filter.process_sample.sh"

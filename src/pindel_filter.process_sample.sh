@@ -3,7 +3,7 @@
 read -r -d '' USAGE <<'EOF'
 Process pindel run output and generate VCF.
 
-Usage: pindel_filter.process_sample.sh [options] pindel_sifted.dat reference pindel_config
+Usage: pindel_filter.process_sample.sh [options] pindel_sifted.dat reference pindel_config_template
  
 Options:
 -h: Print this help message
@@ -19,11 +19,25 @@ Creates configuration file and calls GenomeVIP/pindel_filter.pl, which performs 
 3. apply homopolymer filter
 
 Output filenames:
-    OUTD/... config
-    OUTD/pindel_raw.CvgVafStrand_pass.Homopolymer_pass.vcf
+    OUTD/pindel_germline_filter_config.dat
+    OUTD/pindel_sifted.out.CvgVafStrand_pass.Homopolymer_pass.vcf
 
 Note that OUTD is the same directory as the input data
 
+GenomeVIP pindel_filter configuration file consists of two parts:
+  * template lines obtained from pindel_config_template
+  * run-specific lines generated here
+
+Example pindel_config_template:
+    pindel.filter.heterozyg_min_var_allele_freq = 0.2
+    pindel.filter.homozyg_min_var_allele_freq = 0.8
+    pindel.filter.mode = germline
+    pindel.filter.apply_filter = true
+    pindel.filter.germline.min_coverages = 10
+    pindel.filter.germline.min_var_allele_freq = 0.20
+    pindel.filter.germline.require_balanced_reads = true
+    pindel.filter.germline.remove_complex_indels = true
+    pindel.filter.germline.max_num_homopolymer_repeat_units = 6
 EOF
 
 # based on TinDaisy-Core/src/parse_pindel.pl
@@ -34,9 +48,6 @@ SCRIPT=$(basename $0)
 PERL="/usr/bin/perl"
 PINDELD="/usr/local/pindel"
 GVIP_FILTER="/usr/local/TinDaisy-Core/src/GenomeVIP/pindel_filter.pl"
-
-# Set defaults
-OUTVCF="final.SV.WGS.vcf"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
 while getopts ":hdVH" opt; do
@@ -117,4 +128,4 @@ CMD="$PERL $GVIP_FILTER $CONFIG"
 run_cmd "$CMD" $DRYRUN
 
 >&2 echo $SCRIPT success.
->&2 echo Written INDEL to $OUTD/$FNOUT.CvgVafStrand_pass.Homopolymer_pass.vcf
+>&2 echo Written INDEL to $OUTD/${FNOUT}.CvgVafStrand_pass.Homopolymer_pass.vcf

@@ -8,8 +8,12 @@
 #   WID="d1534412-a8b4-4c01-87d5-a4704aa51442"
 #   curl -k -s -X GET http://localhost:8000/api/workflows/v1/$WID/status -H "accept: application/json"
 
-CONFIG="/gscuser/tmooney/server.cromwell.config"
 CROMWELL="/usr/local/cromwell/cromwell-47.jar"
+CONFIG="/gscuser/tmooney/server.cromwell.config"
 
-/usr/bin/java -Dconfig.file=$CONFIG -jar $CROMWELL server > /dev/null &
+echo Starting local instance of cromwell server
+/usr/bin/java -Dconfig.file=$CONFIG -jar $CROMWELL server >/dev/null &
 
+echo Please run the following:
+echo
+echo export CROMWELL_URL=http://localhost:8000

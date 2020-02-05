@@ -1,5 +1,7 @@
 # Testing on compute1
 
+*TODO* Update scripts.  See ../cromwell-MGI for model.  In particular, config and src moved to ../cromwell.resources
+
 Based on part on TinDaisy testing on compute1 here: /home/m.wyczalkowski/Projects/TinDaisy/TinDaisy/demo/MutectDemo/compute1-dev
 Successful run 1/23/20
 

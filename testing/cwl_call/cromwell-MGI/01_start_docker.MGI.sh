@@ -1,8 +1,12 @@
 # Launch docker environment at MGI before running cromwell.
+# command based on CromwellRunner/docker/start_docker.MGI.sh
+#   from https://github.com/ding-lab/CromwellRunner
+mem=8
 
-#IMAGE="registry.gsc.wustl.edu/apipe-builder/genome_perl_environment:5"
-#IMAGE="registry.gsc.wustl.edu/apipe-builder/genome_perl_environment:20"
-#bsub -Is -q research-hpc -a "docker($IMAGE)" /bin/bash
+SELECT="select[mem>$(( mem * 1000 ))] rusage[mem=$(( mem * 1000 ))]";
+QUEUE="research-hpc"
+IMAGE="mwyczalkowski/cromwell-runner"
 
-# currently, using gsub, which tends to point to recent cromwell versions
-/gscmnt/gc2560/core/env/v1/bin/gsub -m 8
+CMD="bsub -Is -M $(( $mem * 1000000 )) -R \"$SELECT\" -q $QUEUE -a \"docker($IMAGE)\" /bin/bash -l"
+>&2 echo Running: $CMD
+eval $CMD

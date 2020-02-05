@@ -44,12 +44,6 @@ Pipeline can be called in 3 contexts:
 
 Setting `finalize` parameter to `true` will compress all intermediate files and logs
 
-## Parameters
-
-Not clear what additional parameters should be used for HaplotypeCaller.
-germline_variant_snakemake has the argument 
-    gatk HaplotypeCaller --standard-min-confidence-threshold-for-calling 30.0
-
 ## Background
 
 This pipeline closely based on https://github.com/ding-lab/GATK_GermlineCaller

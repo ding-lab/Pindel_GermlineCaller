@@ -1,0 +1,14 @@
+# the string below is to be replaced with path to output of pindel_caller (full path to pindel_sifted.out)
+pindel_sifted:
+  class: File
+  path: DAT
+reference:
+  class: File
+  path: ../../../demo_data/Homo_sapiens_assembly19.COST16011_region.fa
+pindel_config_template:
+  class: File
+  path: ../../../../params/pindel_germline_filter_config.ini
+dryrun: false
+# bypass is handy for demo so that VCF file has real results, but should not in general be used for production runs
+bypass_cvs: true
+bypass_homopolymer: true

@@ -1,6 +1,6 @@
-# Create YAML file
+# Create YAML file by replacing string DAT in template with passed value
 # Usage:
-#   bash make_yaml.sh TEMPLATE TD_ROOT
+#   bash make_yaml.sh TEMPLATE DAT
 
 # Usage is same as make_config.sh
 
@@ -11,17 +11,17 @@ if [ "$#" -ne 2 ]; then
 fi
 
 TEMPLATE=$1
-TD_ROOT=$2
+DAT=$2
 
-if [ ! -f $TEMPLATE ]; then
+if [ ! -e $TEMPLATE ]; then
     >&2 echo ERROR: $TEMPLATE does not exist
     exit 1
 fi
 
-if [ ! -d $TD_ROOT ]; then
-    >&2 echo ERROR: Directory $TD_ROOT does not exist.  Please create it
+if [ ! -e $DAT ]; then
+    >&2 echo ERROR: $DAT does not exist
     exit 1
 fi
 
 # This is printed to STDOUT
-sed "s|TD_ROOT|$TD_ROOT|g" $TEMPLATE 
+sed "s|DAT|$DAT|g" $TEMPLATE 

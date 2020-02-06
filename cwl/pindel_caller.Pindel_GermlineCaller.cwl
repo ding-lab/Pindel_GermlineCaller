@@ -78,7 +78,7 @@ outputs:
 label: pindel_caller.Pindel_GermlineCaller
 requirements:
   - class: ResourceRequirement
-    ramMin: 8000
+    ramMin: 28000
   - class: DockerRequirement
     dockerPull: mwyczalkowski/pindel_germlinecaller
   - class: InlineJavascriptRequirement

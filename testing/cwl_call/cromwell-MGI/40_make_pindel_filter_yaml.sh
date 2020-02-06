@@ -4,6 +4,10 @@
 
 DAT=$1
 
+# this template is appropriate for CPTAC3 hg38 data
+# For demo use pindel_filter_demo.template.yaml
+TEMPLATE="../yaml/pindel_filter_hg38.template.yaml"
+
 if [ -z $DAT ]; then
     >&2 echo ERROR: please pass DAT file
     exit 1
@@ -17,7 +21,7 @@ OUTD="yaml.generated"
 mkdir -p $OUTD
 OUT="$OUTD/pindel_filter.yaml"
 
-bash ../cromwell.resources/make_yaml.sh ../yaml/pindel_filter_demo.template.yaml $DAT > $OUT
+bash ../cromwell.resources/make_yaml.sh $TEMPLATE $DAT > $OUT
 
 >&2 echo Written to $OUT
 

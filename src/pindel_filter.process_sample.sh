@@ -11,6 +11,7 @@ Options:
 -V: Bypass filtering for CvgVafStrand 
 -H: Bypass filtering for Homopolymer 
 -o: output directory.  By default, same directory as the input data
+-I: Compress and index output files.  Original VCF files will be removed, VCF.gz and VCF.gz.csi will be written
 
 pindel_config is GenomeVIP config file for pindel_filter
 
@@ -47,9 +48,11 @@ SCRIPT=$(basename $0)
 PERL="/usr/bin/perl"
 PINDELD="/usr/local/pindel"
 GVIP_FILTER="/opt/Pindel_GermlineCaller/src/pindel_filter.pl"
+BCFTOOLS="/usr/local/bin/bcftools/bcftools"
+BGZIP="/usr/local/bin/bgzip"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":hdVHo:" opt; do
+while getopts ":hdVHo:I" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -67,6 +70,9 @@ while getopts ":hdVHo:" opt; do
     o)  
       OUTD="$OPTARG"
       SET_OUTD=1
+      ;;
+    I)  # binary argument
+      DO_INDEX=1
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG"
@@ -134,9 +140,18 @@ FNOUT=$(basename $INFN)
 CONFIG="$OUTD/pindel_germline_filter_config.dat"
 make_config_genomevip $INFN $REF $CONFIG_TEMPLATE $CONFIG
 
-
 CMD="$PERL $GVIP_FILTER $CONFIG"
 run_cmd "$CMD" $DRYRUN
 
+OUT_INDEL="$OUTD/${FNOUT}.CvgVafStrand_pass.Homopolymer_pass.vcf"
+
+# compress and index output files, remove originals 
+if [ $DO_INDEX ]; then
+    >&2 echo Compressing and indexing $OUT_INDEL
+    CMD="$BGZIP $OUT_INDEL && $BCFTOOLS index $OUT_INDEL.gz && rm -f $OUT_INDEL "
+    run_cmd "$CMD" $DRYRUN
+    OUT_INDEL="$OUT_INDEL.gz"
+fi
+
 >&2 echo $SCRIPT success.
->&2 echo Written INDEL to $OUTD/${FNOUT}.CvgVafStrand_pass.Homopolymer_pass.vcf
+>&2 echo Written INDEL to $OUT_INDEL

@@ -45,6 +45,11 @@ RUN cd /usr/local/ \
     && cd /usr/local/pindel/ \
     && ./INSTALL /usr/local/htslib
 
+RUN cd /usr/local/ \
+    && git clone git://github.com/samtools/bcftools.git \
+    && cd bcftools \
+    && make
+
 RUN printf 'will cite\n' | parallel --citation
 
 WORKDIR /opt

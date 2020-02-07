@@ -15,7 +15,7 @@ MAINTAINER Matthew Wyczalkowski <m.wyczalkowski@wustl.edu>
 
 # Is bcftools needed?  How does pindel_parallel merge VCFs?
 #   Through cat ... | grep
-# bcftools not needed
+# bcftools not needed except for indexing
 
 RUN apt-get update && apt-get install -y \
     build-essential \

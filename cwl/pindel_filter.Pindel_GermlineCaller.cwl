@@ -36,6 +36,13 @@ inputs:
       prefix: '-V'
     label: bypass_cvs
     doc: 'Bypass filtering for CvgVafStrand'
+  - id: compress_output
+    type: boolean?
+    inputBinding:
+      position: 0
+      prefix: '-I'
+    label: Compress output
+    doc: 'Compress and index output VCF files'
   - id: bypass_homopolymer
     type: boolean?
     inputBinding:

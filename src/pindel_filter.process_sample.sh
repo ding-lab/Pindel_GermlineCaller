@@ -48,7 +48,7 @@ SCRIPT=$(basename $0)
 PERL="/usr/bin/perl"
 PINDELD="/usr/local/pindel"
 GVIP_FILTER="/opt/Pindel_GermlineCaller/src/pindel_filter.pl"
-BCFTOOLS="/usr/local/bin/bcftools/bcftools"
+BCFTOOLS="/usr/local/bcftools/bcftools"
 BGZIP="/usr/local/bin/bgzip"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial

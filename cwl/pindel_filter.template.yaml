@@ -1,0 +1,13 @@
+bypass_homopolymer: false  # type "boolean" (optional)
+compress_output: false  # type "boolean" (optional)
+bypass_cvs: false  # type "boolean" (optional)
+dryrun: false  # type "boolean" (optional)
+pindel_config_template:  # type "File"
+    class: File
+    path: a/file/path
+reference:  # type "File"
+    class: File
+    path: a/file/path
+pindel_sifted:  # type "File"
+    class: File
+    path: a/file/path

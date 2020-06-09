@@ -1,6 +1,6 @@
 class: CommandLineTool
 cwlVersion: v1.0
-id: pindel_filter.Pindel_GermlineCaller
+id: pindel_filter
 baseCommand:
   - /bin/bash
   - /opt/Pindel_GermlineCaller/src/pindel_filter.process_sample.sh
@@ -56,7 +56,7 @@ outputs:
     type: File
     outputBinding:
       glob: filtered/pindel_sifted.out.CvgVafStrand_pass.Homopolymer_pass.vcf
-label: pindel_filter.Pindel_GermlineCaller
+label: Pindel Filter
 arguments:
   - position: 0
     prefix: '-o'

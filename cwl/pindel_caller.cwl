@@ -1,6 +1,8 @@
 class: CommandLineTool
 cwlVersion: v1.0
-id: pindel_caller.Pindel_GermlineCaller
+$namespaces:
+  sbg: 'https://www.sevenbridges.com/'
+id: pindel_caller
 baseCommand:
   - /bin/bash
   - /opt/Pindel_GermlineCaller/src/pindel_caller.process_sample_parallel.sh
@@ -13,25 +15,29 @@ inputs:
     secondaryFiles:
       - .fai
       - ^.dict
-  - id: bam
+  - id: bam     # this will not currently process CRAM
     type: File
     inputBinding:
       position: 2
-    label: Input BAM/CRAM
-    secondaryFiles: ${if (self.nameext === ".bam") {return self.basename + ".bai"} else {return self.basename + ".crai"}}
+    label: Input BAM
+    secondaryFiles:
+      - >-
+        ${if (self.nameext === ".bam") {return self.basename + ".bai"} else
+        {return self.basename + ".crai"}}
   - id: chrlist
     type: File?
     inputBinding:
       position: 0
       prefix: '-c'
-    label: List of genomic regions
+    doc: List of genomic regions
+    label: Genomic regions
   - id: njobs
     type: int?
     inputBinding:
       position: 0
       prefix: '-j'
-    label: Parallel job count
-    doc: 'Number of jobs to run in parallel mode'
+    label: N parallel jobs
+    doc: Number of jobs to run in parallel mode
   - id: dryrun
     type: boolean?
     inputBinding:
@@ -45,40 +51,44 @@ inputs:
       position: 0
       prefix: '-F'
     label: finalize
-    doc: 'Compress intermediate data and logs'
+    doc: Compress intermediate data and logs
   - id: pindel_args
     type: string?
     inputBinding:
       position: 0
       prefix: '-A'
-    label: 'Arguments passed to Pindel.  Default: "-x 4 -I -B 0 -M 3"'
+    label: Pindel arguments
+    doc: Arguments passed to pindel
   - id: sample_name
     type: string?
     inputBinding:
       position: 0
       prefix: '-s'
-    label: 'Sample name as used in pindel configuration file.  Default: SAMPLE'
+    doc: Sample name as used in pindel configuration file (default SAMPLE)
+    label: Sample name
   - id: centromere
     type: File?
     inputBinding:
       position: 0
       prefix: '-J'
-    label: optional bed file passed to pindel to exclude regions
+    doc: Exclude regions like centromeres from processing
+    label: exclude BED
   - id: config_fn
     type: File?
     inputBinding:
       position: 0
       prefix: '-C'
-    label: Pindel config file to use instead of creating one
+    doc: Pindel config file to use instead of creating one
+    label: pindel config
 outputs:
   - id: pindel_sifted
     type: File
     outputBinding:
       glob: output/pindel_sifted.out
-label: pindel_caller.Pindel_GermlineCaller
+label: Pindel Caller
 requirements:
   - class: ResourceRequirement
     ramMin: 28000
   - class: DockerRequirement
-    dockerPull: mwyczalkowski/pindel_germlinecaller:20200608
+    dockerPull: 'mwyczalkowski/pindel_germlinecaller:20200608'
   - class: InlineJavascriptRequirement

@@ -24,6 +24,8 @@ EOF
 source /opt/Pindel_GermlineCaller/src/utils.sh
 SCRIPT=$(basename $0)
 
+OUTD="."
+
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
 while getopts ":hWc:o:P:" opt; do
   case $opt in
@@ -35,7 +37,7 @@ while getopts ":hWc:o:P:" opt; do
       WARN_ONLY=1
       ;;
     c) 
-      CHRLIST=$OPTARG
+      CHRLIST_FN=$OPTARG
       ;;
     o) 
       OUTD=$OPTARG
@@ -57,6 +59,12 @@ while getopts ":hWc:o:P:" opt; do
 done
 shift $((OPTIND-1))
 
+confirm $CHRLIST_FN
+CHRLIST=$(cat $CHRLIST_FN)
+
+mkdir -p $OUTD
+test_exit_status 
+
 # Evaluate chromosomes seen in output and create list like,
 #    9047 chr1
 #    3900 chr10
@@ -64,7 +72,7 @@ CHRTEST="$OUTD/pindel_sifted.chrom.txt"
 CMD="cut -f 4 $PINDEL_OUT | cut -f 2 -d ' ' | sort  | uniq -c > $CHRTEST"
 run_cmd "$CMD" $DRYRUN
 
-
+WARN_SEEN=0
 for CHRX in $CHRLIST; do
 
 # if CHRLIST looks like chr1:1-1000000, evaluate just chr1
@@ -73,11 +81,18 @@ for CHRX in $CHRLIST; do
     if ! grep -Fwq "$CHR" $CHRTEST; then
         if [ "$WARN_ONLY" ]; then
             >&2 echo $SCRIPT : WARNING : CONFIRM_SUCCESS test failed.  Chromosome $CHR not found in $PINDEL_OUT
-            exit 1
+            WARN_SEEN=1
         else
             >&2 echo $SCRIPT : ERROR : CONFIRM_SUCCESS test failed.  Chromosome $CHR not found in $PINDEL_OUT
+            exit 1
         fi
     fi
 done
 
->&2 echo CONFIRM_SUCCESS test succeeded
+test_exit_status 
+
+if [ $WARN_SEEN == 0 ]; then
+    >&2 echo CONFIRM_SUCCESS test succeeded
+else
+    >&2 echo CONFIRM_SUCCESS test had warnings.  Continuing
+fi

@@ -24,6 +24,8 @@ Options:
 -s SAMPLE_NAME : Sample name as used in pindel configuration file [ "SAMPLE" ]
 -J CENTROMERE: optional bed file passed to pindel to exclude regions
 -C CONFIG_FN: Config file to use instead of creating one here
+-K : confirm success by testing output to make sure all chromosomes represented
+-W : print warning but do not exit if confirm success fails
 
 The following arguments are passed to process_sample.sh directly:
 -A PINDEL_ARGS: Arguments passed to Pindel.  Default: "-x 4 -I -B 0 -M 3"
@@ -42,6 +44,10 @@ GNU parallel to loop across all entries in CHRLIST, running -j JOBS at a time,
 and wait until all jobs completed.  Output logs written to OUTD/logs/Pindel.$CHR.log
 Parallel mode can be disabled with -j 0.
 
+If CHRLIST is defined and CONFIRM_SUCCESS (-K) is set, test pindel_sifted.out to make sure
+all chromosomes are represented.  This is to deal with silent out of memory errors which
+result in missing data.  
+
 EOF
 
 source /opt/Pindel_GermlineCaller/src/utils.sh
@@ -57,9 +63,10 @@ NJOBS=4
 DO_PARALLEL=0
 OUTD="./output"
 PROCESS="/opt/Pindel_GermlineCaller/src/pindel_caller.process_sample.sh"
+EVALUATE_SUCCESS="/opt/Pindel_GermlineCaller/src/evaluate_success.sh"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":hd1c:j:o:Fs:J:C:A:" opt; do
+while getopts ":hd1c:j:o:Fs:J:C:A:KW" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -96,6 +103,12 @@ while getopts ":hd1c:j:o:Fs:J:C:A:" opt; do
       ;;
     A) 
       PS_ARGS="$PS_ARGS -A \"$OPTARG\""
+      ;;
+    K) 
+      CONFIRM_SUCCESS=1
+      ;;
+    W) 
+      CS_ARGS="$CS_ARGS -W"
       ;;
     \?)
       >&2 echo "$SCRIPT: ERROR: Invalid option: -$OPTARG"
@@ -212,6 +225,11 @@ else
     >&2 echo $SCRIPT : pindel : no output found matching $PATTERN
 fi
 
+# Evaluate success
+if [ ! "$NO_CHRLIST" ] && [ "$CONFIRM_SUCCESS" == 1 ]
+    CS_CMD="$EVALUATE_SUCCESS $CS_ARGS -c $CHRLIST -o $OUTD -P $PINDEL_OUT"
+    run_cmd "$CMD" $DRYRUN
+fi
 
 if [[ "$FINALIZE" ]] ; then
 

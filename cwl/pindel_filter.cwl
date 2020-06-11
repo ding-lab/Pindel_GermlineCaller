@@ -55,7 +55,7 @@ outputs:
   - id: indel_vcf
     type: File
     outputBinding:
-      glob: filtered/pindel_sifted.out.CvgVafStrand_pass.Homopolymer_pass.vcf
+      glob: ${if (inputs.compress_output ) {return "filtered/pindel_sifted.out.CvgVafStrand_pass.Homopolymer_pass.vcf.gz" } else {return "filtered/pindel_sifted.out.CvgVafStrand_pass.Homopolymer_pass.vcf"}}
 label: Pindel Filter
 arguments:
   - position: 0

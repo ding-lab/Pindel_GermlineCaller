@@ -50,6 +50,11 @@ This may be identified as no or too few calls for common chromosomes.  Example o
 is / was in /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/pindel_caller.Pindel_GermlineCaller.cwl/d54c10d0-3c99-49a8-bbb8-35c1dd491174/call-pindel_caller.Pindel_GermlineCaller.cwl/execution/output/logs
 There, per-chrom logs Pindel_GermlineCaller.XXX.out.gz were truncated.  Most die immediately (3 lines output) but some go on for some number of loops
 
+### `confirm_success` test
+
+Because we are not catching out of memory errors with parallel, need to have test to confirm that the run succeeded.
+This is done by evaluating the result file to confirm that it has reasonable representation of all chromosomes.
+
 
 ## Author
 

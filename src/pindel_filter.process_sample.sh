@@ -131,7 +131,7 @@ INFN=$1 ; confirm $INFN
 REF=$2 ; confirm $REF
 CONFIG_TEMPLATE=$3 ; confirm $PINDEL_CONFIG
 
-if [ -z $OUTD]; then
+if [ -z $OUTD ]; then
     OUTD=$(dirname $INFN)
 fi
 # Filter script imposes this

@@ -1,2 +1,2 @@
 
-IMAGE="mwyczalkowski/pindel_germlinecaller:20200608"
+IMAGE="mwyczalkowski/pindel_germlinecaller:20200612"

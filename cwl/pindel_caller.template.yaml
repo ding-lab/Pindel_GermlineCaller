@@ -8,6 +8,8 @@ sample_name: a_string  # type "string" (optional)
 pindel_args: a_string  # type "string" (optional)
 finalize: false  # type "boolean" (optional)
 dryrun: false  # type "boolean" (optional)
+only_warn: false  # type "boolean" (optional)
+confirm_success: false  # type "boolean" (optional)
 njobs: 0  # type "int" (optional)
 chrlist:  # type "File" (optional)
     class: File

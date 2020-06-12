@@ -38,6 +38,20 @@ inputs:
       prefix: '-j'
     label: N parallel jobs
     doc: Number of jobs to run in parallel mode
+  - id: confirm_success
+    type: boolean?
+    inputBinding:
+      position: 0
+      prefix: '-K'
+    label: confirm success
+    doc: 'confirm success by testing output to make sure all chromosomes represented'
+  - id: only_warn
+    type: boolean?
+    inputBinding:
+      position: 0
+      prefix: '-W'
+    label: only warn
+    doc: 'print warning but do not exit if confirm success fails'
   - id: dryrun
     type: boolean?
     inputBinding:
@@ -90,5 +104,5 @@ requirements:
   - class: ResourceRequirement
     ramMin: 28000
   - class: DockerRequirement
-    dockerPull: 'mwyczalkowski/pindel_germlinecaller:20200608'
+    dockerPull: 'mwyczalkowski/pindel_germlinecaller:20200612'
   - class: InlineJavascriptRequirement

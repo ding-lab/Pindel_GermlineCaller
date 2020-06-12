@@ -62,8 +62,8 @@ SCRIPT=$(basename $0)
 NJOBS=4
 DO_PARALLEL=0
 OUTD="./output"
-PROCESS="/opt/Pindel_GermlineCaller/src/pindel_caller.process_sample.sh"
-EVALUATE_SUCCESS="/opt/Pindel_GermlineCaller/src/evaluate_success.sh"
+PROCESS="/bin/bash /opt/Pindel_GermlineCaller/src/pindel_caller.process_sample.sh"
+EVALUATE_SUCCESS="/bin/bash /opt/Pindel_GermlineCaller/src/evaluate_success.sh"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
 while getopts ":hd1c:j:o:Fs:J:C:A:KW" opt; do
@@ -226,9 +226,13 @@ else
 fi
 
 # Evaluate success
-if [ ! "$NO_CHRLIST" ] && [ "$CONFIRM_SUCCESS" == 1 ]
-    CS_CMD="$EVALUATE_SUCCESS $CS_ARGS -c $CHRLIST -o $OUTD -P $PINDEL_OUT"
-    run_cmd "$CMD" $DRYRUN
+>&2 echo DEBUG: CONFIRM_SUCCESS = $CONFIRM_SUCCESS
+if [ ! "$NO_CHRLIST" ] && [ "$CONFIRM_SUCCESS" == 1 ]; then
+    >&2 echo Running CONFIRM_SUCCESS
+    CS_CMD="$EVALUATE_SUCCESS $CS_ARGS -c $CHRLIST_FN -o $OUTD -P $PINDEL_OUT"
+    run_cmd "$CS_CMD" $DRYRUN
+else
+    >&2 echo Skipping CONFIRM_SUCCESS
 fi
 
 if [[ "$FINALIZE" ]] ; then

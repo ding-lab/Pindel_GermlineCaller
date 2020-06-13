@@ -5,8 +5,8 @@ source /opt/lsf9/conf/lsf.conf
 
 CONFIG="cromwell-config-db.dat"
 
-CWL="../../cwl/vep_annotate.cwl"
-YAML="cwl-yaml/vep_annotate-C3L-00001.yaml"
+CWL="../../cwl/pindel_caller.cwl"
+YAML="cwl-yaml/pindel_caller.C3L-00081.yaml"
 
 
 CROMWELL="/usr/local/cromwell/cromwell-47.jar"

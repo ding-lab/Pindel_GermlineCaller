@@ -65,5 +65,5 @@ requirements:
   - class: ResourceRequirement
     ramMin: 8000
   - class: DockerRequirement
-    dockerPull: mwyczalkowski/pindel_germlinecaller:20200612
+    dockerPull: mwyczalkowski/pindel_germlinecaller:20200613
   - class: InlineJavascriptRequirement

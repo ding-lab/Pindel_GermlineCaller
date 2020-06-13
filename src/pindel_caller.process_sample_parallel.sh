@@ -175,6 +175,7 @@ else
 fi
 
 # CHRLIST newline-separated list of regions passed to Pindel -c 
+HALT="--halt now,fail=1"  # exit when the first job fails. Kill running jobs.  See https://www.gnu.org/software/parallel/man.html
 for CHR in $CHRLIST; do
     NOW=$(date)
     >&2 echo \[ $NOW \] : Processing $CHR
@@ -194,7 +195,7 @@ for CHR in $CHRLIST; do
     if [ $DO_PARALLEL == 1 ]; then
         JOBLOG="$LOGD/Pindel_GermlineCaller.$CHR.log"
         CMD=$(echo "$CMD" | sed 's/"/\\"/g' )   # This will escape the quotes in $CMD
-        CMD="parallel --semaphore -j$NJOBS --id $MYID --joblog $JOBLOG --tmpdir $LOGD \"$CMD\" "
+        CMD="parallel --semaphore -j$NJOBS --id $MYID --joblog $JOBLOG --tmpdir $LOGD $HALT \"$CMD\" "
     fi
 
     run_cmd "$CMD" $DRYRUN

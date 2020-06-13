@@ -137,4 +137,4 @@ CMD="$PINDEL_BIN -f $REF -i $CONFIG_FN -o $OUT $PINDEL_ARGS $CENTROMERE_ARG "
 
 run_cmd "$CMD" $DRYRUN
 
->&2 echo $SCRIPT success.
+>&2 echo $SCRIPT $IX success.

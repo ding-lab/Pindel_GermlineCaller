@@ -23,10 +23,6 @@ Output filenames:
 where XXX is given by INTERVAL_LABEL
 EOF
 
-# testing of error code exits
->&2 echo DEBUG : Exiting with error code 1 for testing purposes
-exit 1
-
 source /opt/Pindel_GermlineCaller/src/utils.sh
 SCRIPT=$(basename $0)
 
@@ -149,4 +145,4 @@ run_cmd "$CMD" $DRYRUN
 CMD="echo Success > $OUT_SUCCESS"
 run_cmd "$CMD" $DRYRUN
 
->&2 echo $SCRIPT $IX success.  File $OUT_SUCCESS created
+>&2 echo $SCRIPT $IX success

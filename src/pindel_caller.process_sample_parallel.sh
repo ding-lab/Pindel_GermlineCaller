@@ -45,8 +45,9 @@ and wait until all jobs completed.  Output logs written to OUTD/logs/Pindel.$CHR
 Parallel mode can be disabled with -j 0.
 
 If CHRLIST is defined and CONFIRM_SUCCESS (-K) is set, test pindel_sifted.out to make sure
-all chromosomes are represented.  This is to deal with silent out of memory errors which
-result in missing data.  
+all chromosomes are represented.  This is to deal with silent out of memory errors stemming
+from parallel not recognising abnormal death by signal.  CONFIRM_SUCCESS doesn't always
+work in practice, and additional checks are performed to catch such errors.
 
 EOF
 
@@ -223,7 +224,9 @@ for CHR in $CHRLIST; do
     if [ ! -e $OUT_SUCCESS ]; then
         >&2 echo ERROR: Success file $OUT_SUCCESS not found
         exit 1
-    fi
+    else
+		>&2 echo Success file $OUT_SUCCESS  - OK
+	fi
 done
 
 # Now parse pindel output to get pindel_sifted.out file
@@ -240,13 +243,10 @@ else
 fi
 
 # Evaluate success
->&2 echo DEBUG: CONFIRM_SUCCESS = $CONFIRM_SUCCESS
 if [ ! "$NO_CHRLIST" ] && [ "$CONFIRM_SUCCESS" == 1 ]; then
     >&2 echo Running CONFIRM_SUCCESS
     CS_CMD="$EVALUATE_SUCCESS $CS_ARGS -c $CHRLIST_FN -o $OUTD -P $PINDEL_OUT"
     run_cmd "$CS_CMD" $DRYRUN
-else
-    >&2 echo Skipping CONFIRM_SUCCESS
 fi
 
 if [[ "$FINALIZE" ]] ; then

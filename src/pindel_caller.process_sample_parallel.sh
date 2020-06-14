@@ -212,9 +212,22 @@ if [ $DO_PARALLEL == 1 ]; then
     run_cmd "$CMD" $DRYRUN
 fi
 
+# Confirm that "success" file has been written for each chrom, since parallel doesn't recognise abnormal death by signal
+for CHR in $CHRLIST; do
+    if [ "$NO_CHRLIST" ]; then
+        OUT_SUCCESS="$OUTDR/pindel_Final.succeeded"
+    else
+        OUT_SUCCESS="$OUTDR/pindel_${CHR}.succeeded"
+    fi
+
+    if [ ! -e $OUT_SUCCESS ]; then
+        >&2 echo ERROR: Success file $OUT_SUCCESS not found
+        exit 1
+    fi
+done
+
 # Now parse pindel output to get pindel_sifted.out file
 # testing for globs from https://stackoverflow.com/questions/2937407/test-whether-a-glob-has-any-matches-in-bash
-
 PINDEL_OUT="$OUTD/pindel_sifted.out"
 
 PATTERN="$OUTDR/pindel_*D $OUTDR/pindel_*SI $OUTDR/pindel_*INV $OUTDR/pindel_*TD"

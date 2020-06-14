@@ -23,6 +23,10 @@ Output filenames:
 where XXX is given by INTERVAL_LABEL
 EOF
 
+# testing of error code exits
+>&2 echo DEBUG : Exiting with error code 1 for testing purposes
+exit 1
+
 source /opt/Pindel_GermlineCaller/src/utils.sh
 SCRIPT=$(basename $0)
 
@@ -132,9 +136,17 @@ fi
 
 # Run 
 
+OUT_SUCCESS="$OUTD/pindel_${IX}.succeeded"
+rm -f $OUT_SUCCESS
+
 OUT="$OUTD/pindel_${IX}"
+
 CMD="$PINDEL_BIN -f $REF -i $CONFIG_FN -o $OUT $PINDEL_ARGS $CENTROMERE_ARG "
 
 run_cmd "$CMD" $DRYRUN
 
->&2 echo $SCRIPT $IX success.
+# Write out success file
+CMD="echo Success > $OUT_SUCCESS"
+run_cmd "$CMD" $DRYRUN
+
+>&2 echo $SCRIPT $IX success.  File $OUT_SUCCESS created

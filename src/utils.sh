@@ -7,8 +7,8 @@ function test_exit_status {
         if [[ $rc != 0 ]]; then
             NOW=$(date)
             >&2 echo [ $NOW ] $SCRIPT Fatal ERROR $rc.  Exiting.
-            exit $rc;
-        fi;
+            exit $rc
+        fi
     done
 }
 

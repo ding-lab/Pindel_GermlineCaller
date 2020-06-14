@@ -12,7 +12,9 @@ chrlist:  # type "File" (optional)
     path: /gscuser/mwyczalk/projects/TinDaisy/TinDaisy/params/chrlist/GRCh38.d1.vd1.chrlist.txt
 bam:  # type "File"
     class: File
-    path: /gscmnt/gc2619/dinglab_cptac3/GDC_import/data/a0e38199-402a-4ae1-b00d-ec9c67dd51df/1cc7a20f-b05e-4661-95ec-399b3080a02b_gdc_realn.bam
+#    path: /gscmnt/gc2619/dinglab_cptac3/GDC_import/data/a0e38199-402a-4ae1-b00d-ec9c67dd51df/1cc7a20f-b05e-4661-95ec-399b3080a02b_gdc_realn.bam
+  # try not to localize for faster testing
+    path: /gscmnt/gc2541/cptac3_analysis/cromwell-workdir/cromwell-executions/pindel_caller.cwl/5f76290a-9547-40ff-b4a0-0bdc8acf7ae8/call-pindel_caller.cwl/inputs/1774341999/1cc7a20f-b05e-4661-95ec-399b3080a02b_gdc_realn.bam
 reference:  # type "File"
     class: File
     path: /gscmnt/gc2521/dinglab/mwyczalk/somatic-wrapper-data/image.data/A_Reference/GRCh38.d1.vd1/GRCh38.d1.vd1.fa

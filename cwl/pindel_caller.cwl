@@ -102,7 +102,7 @@ outputs:
 label: Pindel Caller
 requirements:
   - class: ResourceRequirement
-    ramMin: 28000
+    ramMin: 32000
   - class: DockerRequirement
     dockerPull: 'mwyczalkowski/pindel_germlinecaller:20200613'
   - class: InlineJavascriptRequirement
